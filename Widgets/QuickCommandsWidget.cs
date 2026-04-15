@@ -31,21 +31,6 @@ public class QuickCommandsWidget(
 {
     private const int SlotCount = 15;
 
-    private const string IconTypeNone   = "None";
-    private const string IconTypeGame   = "Game";
-    private const string IconTypeFa     = "FontAwesome";
-    private const string IconTypeGlyph  = "GameGlyph";
-    private const string IconTypeBitmap = "Bitmap";
-
-    private static readonly Dictionary<string, string> IconTypeOptions = new()
-    {
-        [IconTypeNone]   = "None",
-        [IconTypeGame]   = "Game icon",
-        [IconTypeFa]     = "FontAwesome",
-        [IconTypeGlyph]  = "Game glyph",
-        [IconTypeBitmap] = "Bitmap font",
-    };
-
     private static ICommandManager CommandManager => Framework.Service<ICommandManager>();
     private static IChatGui ChatGui => Framework.Service<IChatGui>();
     private static IPluginLog Log => Framework.Service<IPluginLog>();
@@ -90,40 +75,33 @@ public class QuickCommandsWidget(
                 "", 256, false
             ) { Category = cat });
 
-            vars.Add(new SelectWidgetConfigVariable(
-                $"Slot{i}_IconType",
-                I18N("Icon type"),
-                I18N("Which icon source to use. Pick None for no icon, or one of the four icon families."),
-                IconTypeNone,
-                IconTypeOptions,
-                false
-            ) { Category = cat });
-
+            // Pick ONE of the four icon pickers below — whichever you fill in is used.
+            // Priority if multiple are filled: Game → FontAwesome → Game glyph → Bitmap.
             vars.Add(new IconIdWidgetConfigVariable(
                 $"Slot{i}_IconGame",
                 I18N("Icon — Game id"),
-                I18N("Game icon ID, used when Icon type = Game icon."),
+                I18N("Game icon ID. Leave at 0 if you want to use one of the other icon pickers below."),
                 0u
             ) { Category = cat });
 
             vars.Add(new FaIconWidgetConfigVariable(
                 $"Slot{i}_IconFa",
                 I18N("Icon — FontAwesome"),
-                I18N("FontAwesome icon, used when Icon type = FontAwesome."),
+                I18N("FontAwesome icon. Leave at 'None' to use one of the other icon pickers."),
                 FontAwesomeIcon.None
             ) { Category = cat });
 
             vars.Add(new GameGlyphWidgetConfigVariable(
                 $"Slot{i}_IconGlyph",
                 I18N("Icon — Game glyph"),
-                I18N("In-game glyph (SeIconChar), used when Icon type = Game glyph."),
+                I18N("In-game glyph (SeIconChar). Leave default to use one of the other icon pickers."),
                 default(SeIconChar)
             ) { Category = cat });
 
             vars.Add(new BitmapIconWidgetConfigVariable(
                 $"Slot{i}_IconBitmap",
                 I18N("Icon — Bitmap font"),
-                I18N("Bitmap font icon, used when Icon type = Bitmap font."),
+                I18N("Bitmap font icon. Leave default to use one of the other icon pickers."),
                 default(BitmapFontIcon)
             ) { Category = cat });
         }
@@ -192,24 +170,21 @@ public class QuickCommandsWidget(
 
     private object? ResolveIcon(int slot)
     {
-        var type = GetConfigValue<string>($"Slot{slot}_IconType") ?? IconTypeNone;
-        switch (type)
-        {
-            case IconTypeGame:
-                var id = GetConfigValue<uint>($"Slot{slot}_IconGame");
-                return id > 0 ? id : null;
-            case IconTypeFa:
-                var fa = GetConfigValue<FontAwesomeIcon>($"Slot{slot}_IconFa");
-                return fa == FontAwesomeIcon.None ? null : fa;
-            case IconTypeGlyph:
-                var gl = GetConfigValue<SeIconChar>($"Slot{slot}_IconGlyph");
-                return gl == default ? null : gl;
-            case IconTypeBitmap:
-                var bm = GetConfigValue<BitmapFontIcon>($"Slot{slot}_IconBitmap");
-                return bm == default ? null : bm;
-            default:
-                return null;
-        }
+        // Auto-detect: use whichever picker the user filled in. Game id wins
+        // if multiple are set, then FontAwesome, then Game glyph, then Bitmap.
+        var id = GetConfigValue<uint>($"Slot{slot}_IconGame");
+        if (id > 0) return id;
+
+        var fa = GetConfigValue<FontAwesomeIcon>($"Slot{slot}_IconFa");
+        if (fa != FontAwesomeIcon.None) return fa;
+
+        var gl = GetConfigValue<SeIconChar>($"Slot{slot}_IconGlyph");
+        if (gl != default) return gl;
+
+        var bm = GetConfigValue<BitmapFontIcon>($"Slot{slot}_IconBitmap");
+        if (bm != default) return bm;
+
+        return null;
     }
 
     private void RunCommand(string raw)
@@ -234,7 +209,6 @@ public class QuickCommandsWidget(
         {
             sb.Append(GetConfigValue<string>($"Slot{i}_Label")).Append('\u001f');
             sb.Append(GetConfigValue<string>($"Slot{i}_Command")).Append('\u001f');
-            sb.Append(GetConfigValue<string>($"Slot{i}_IconType")).Append('\u001f');
             sb.Append(GetConfigValue<uint>($"Slot{i}_IconGame")).Append('\u001f');
             sb.Append((int)GetConfigValue<FontAwesomeIcon>($"Slot{i}_IconFa")).Append('\u001f');
             sb.Append((int)GetConfigValue<SeIconChar>($"Slot{i}_IconGlyph")).Append('\u001f');
