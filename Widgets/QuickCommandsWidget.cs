@@ -74,7 +74,7 @@ public class QuickCommandsWidget(
 
         for (int i = 1; i <= SlotCount; i++)
         {
-            var cat = $"Command {i:D2}";
+            var cat = i.ToString();
 
             vars.Add(new StringWidgetConfigVariable(
                 $"Slot{i}_Label",

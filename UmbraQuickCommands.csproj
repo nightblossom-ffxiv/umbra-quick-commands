@@ -22,9 +22,9 @@
         <AssemblyName>UmbraQuickCommands</AssemblyName>
         <RootNamespace>UmbraQuickCommands</RootNamespace>
         <Authors>Nightblossom Team</Authors>
-        <Version>1.0.0.1</Version>
-        <AssemblyVersion>1.0.0.1</AssemblyVersion>
-        <FileVersion>1.0.0.1</FileVersion>
+        <Version>1.0.0.2</Version>
+        <AssemblyVersion>1.0.0.2</AssemblyVersion>
+        <FileVersion>1.0.0.2</FileVersion>
         <Description>Configurable Umbra toolbar widget that runs your custom slash commands from a popup menu.</Description>
         <Copyright>(C) 2026 Nightblossom</Copyright>
         <PackageProjectUrl>https://github.com/nightblossom-ffxiv/nightblossom-helper</PackageProjectUrl>
